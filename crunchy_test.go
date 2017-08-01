@@ -16,8 +16,8 @@ var (
 		{"654321", ErrTooSystematic},
 		{"abcdef", ErrTooSystematic},
 		{"fedcba", ErrTooSystematic},
-		// {"password", ErrDictionary},
-		// {"backdoor", ErrDictionary},
+		{"password", ErrDictionary},
+		{"backdoor", ErrDictionary},
 	}
 	validPws = []string{"d1924ce3d0510b2b2b4604c99453e2e1"}
 )
