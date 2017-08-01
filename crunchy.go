@@ -26,7 +26,7 @@ var (
 	ErrDictionary = errors.New("Password is too common / from a dictionary")
 
 	once  sync.Once
-	words []string
+	words = make(map[string]struct{})
 )
 
 func countUniqueChars(s string) int {
@@ -73,18 +73,15 @@ func foundInDictionaries(s string) bool {
 				continue
 			}
 
-			words = append(words, strings.Split(string(buf), "\n")...)
+			for _, word := range strings.Split(string(buf), "\n") {
+				words[word] = struct{}{}
+			}
 		}
 	})
 
 	s = strings.TrimSpace(strings.ToLower(s))
-	for _, word := range words {
-		if word == s {
-			return true
-		}
-	}
-
-	return false
+	_, ok := words[s]
+	return ok
 }
 
 // ValidatePassword checks password for common flaws
