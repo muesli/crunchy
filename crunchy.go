@@ -43,10 +43,7 @@ func countUniqueChars(s string) int {
 
 func countSystematicChars(s string) int {
 	var x int
-	rs := []rune{}
-	for _, c := range s {
-		rs = append(rs, c)
-	}
+	rs := []rune(s)
 
 	for i, c := range rs {
 		if i == 0 {
@@ -58,6 +55,14 @@ func countSystematicChars(s string) int {
 	}
 
 	return x
+}
+
+func reverse(s string) string {
+	rs := []rune(s)
+	for i, j := 0, len(rs)-1; i < j; i, j = i+1, j-1 {
+		rs[i], rs[j] = rs[j], rs[i]
+	}
+	return string(rs)
 }
 
 func foundInDictionaries(s string) bool {
@@ -81,6 +86,11 @@ func foundInDictionaries(s string) bool {
 
 	s = strings.TrimSpace(strings.ToLower(s))
 	_, ok := words[s]
+	if ok {
+		return true
+	}
+
+	_, ok = words[reverse(s)]
 	return ok
 }
 

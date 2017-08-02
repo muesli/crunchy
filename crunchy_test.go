@@ -17,6 +17,7 @@ var (
 		{"abcdef", ErrTooSystematic},
 		{"fedcba", ErrTooSystematic},
 		{"password", ErrDictionary},
+		{"drowssap", ErrDictionary},
 		{"intoxicate", ErrDictionary},
 	}
 	validPws = []string{"d1924ce3d0510b2b2b4604c99453e2e1"}
