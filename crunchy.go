@@ -37,6 +37,7 @@ var (
 	words = make(map[string]struct{})
 )
 
+// countUniqueChars returns the amount of unique runes in a string
 func countUniqueChars(s string) int {
 	m := make(map[rune]struct{})
 
@@ -49,6 +50,7 @@ func countUniqueChars(s string) int {
 	return len(m)
 }
 
+// countSystematicChars returns how many runes in a string are part of a sequence ('abcdef', '654321')
 func countSystematicChars(s string) int {
 	var x int
 	rs := []rune(s)
@@ -65,6 +67,7 @@ func countSystematicChars(s string) int {
 	return x
 }
 
+// reverse returns the reversed form of a string
 func reverse(s string) string {
 	rs := []rune(s)
 	for i, j := 0, len(rs)-1; i < j; i, j = i+1, j-1 {
@@ -73,10 +76,12 @@ func reverse(s string) string {
 	return string(rs)
 }
 
+// normalize returns the trimmed and lowercase version of a string
 func normalize(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
+// indexDictionaries parses dictionaries/wordlists
 func indexDictionaries() {
 	dicts, err := filepath.Glob(filepath.Join(DictionaryPath, "*"))
 	if err != nil {
@@ -95,6 +100,7 @@ func indexDictionaries() {
 	}
 }
 
+// foundInDictionaries returns whether a (mangled) string exists in the indexed dictionaries
 func foundInDictionaries(s string) (string, error) {
 	once.Do(indexDictionaries)
 
