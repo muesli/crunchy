@@ -105,10 +105,7 @@ func foundInDictionaries(s string) (string, error) {
 
 	// let's check perfect matches first
 	if _, ok := words[pw]; ok {
-		if s == pw {
-			return pw, ErrDictionary
-		}
-		return pw, ErrMangledDictionary
+		return pw, ErrDictionary
 	}
 	if _, ok := words[revpw]; ok {
 		return revpw, ErrMangledDictionary
