@@ -3,6 +3,12 @@ crunchy
 
 Finds common flaws in passwords. Like cracklib, but written in Go.
 
+Detects:
+ - Empty passwords `ErrEmpty`
+ - Too short passwords `ErrTooShort`
+ - Systematic passwords, like "abcdef" or "654321" `ErrTooSystematic`
+ - Passwords from a dictionary / wordlist `ErrDictionary`
+
 ## Installation
 
 Make sure you have a working Go environment. See the [install instructions](http://golang.org/doc/install.html).
