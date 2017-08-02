@@ -6,6 +6,7 @@ Finds common flaws in passwords. Like cracklib, but written in Go.
 Detects:
  - Empty passwords: `ErrEmpty`
  - Too short passwords: `ErrTooShort`
+ - Too few different characters, like "abcddd": `ErrTooFewChars`
  - Systematic passwords, like "abcdef" or "654321": `ErrTooSystematic`
  - Passwords from a dictionary / wordlist: `ErrDictionary`
  - Mangled / reversed passwords like "p@ssw0rd" or "drowssap": `ErrMangledDictionary`
