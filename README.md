@@ -4,11 +4,18 @@ crunchy
 Finds common flaws in passwords. Like cracklib, but written in Go.
 
 Detects:
- - Empty passwords `ErrEmpty`
- - Too short passwords `ErrTooShort`
- - Systematic passwords, like "abcdef" or "654321" `ErrTooSystematic`
- - Passwords from a dictionary / wordlist `ErrDictionary`
- - Mangled/reversed passwords like "p@ssw0rd" or "drowssap" `ErrMangledDictionary`
+ - Empty passwords: `ErrEmpty`
+ - Too short passwords: `ErrTooShort`
+ - Systematic passwords, like "abcdef" or "654321": `ErrTooSystematic`
+ - Passwords from a dictionary / wordlist: `ErrDictionary`
+ - Mangled / reversed passwords like "p@ssw0rd" or "drowssap": `ErrMangledDictionary`
+
+Your system dictionaries from /usr/share/dict will be indexed. If no dictionaries were found, crunchy only relies on the
+regular sanity checks (ErrEmpty, ErrTooShort and ErrTooSystematic). On Ubuntu it is recommended to install the wordlists
+distributed with `cracklib-runtime`, on macOS you can install `cracklib-words` from brew. You could also install various
+other language dictionaries or wordlists, e.g. from skullsecurity.org.
+
+crunchy uses the WagnerFischer algorithm to find mangled passwords in your dictionaries.
 
 ## Installation
 
