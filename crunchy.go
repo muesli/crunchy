@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 )
@@ -65,26 +66,35 @@ func reverse(s string) string {
 	return string(rs)
 }
 
-func foundInDictionaries(s string) bool {
-	once.Do(func() {
-		dicts, err := filepath.Glob("/usr/share/dict/*")
+func normalize(s string) string {
+	return strings.TrimSpace(strings.ToLower(s))
+}
+
+func indexDictionaries() {
+	dicts, err := filepath.Glob("/usr/share/dict/*")
+	if err != nil {
+		return
+	}
+
+	for _, dict := range dicts {
+		buf, err := ioutil.ReadFile(dict)
 		if err != nil {
-			return
+			continue
 		}
 
-		for _, dict := range dicts {
-			buf, err := ioutil.ReadFile(dict)
-			if err != nil {
-				continue
-			}
-
-			for _, word := range strings.Split(string(buf), "\n") {
-				words[word] = struct{}{}
-			}
+		for _, word := range strings.Split(string(buf), "\n") {
+			words[normalize(word)] = struct{}{}
 		}
-	})
+	}
+}
 
-	s = strings.TrimSpace(strings.ToLower(s))
+func foundInDictionaries(s string) bool {
+	once.Do(indexDictionaries)
+
+	s = normalize(s)
+	reg, _ := regexp.Compile("[^a-z]+")
+	s = reg.ReplaceAllString(s, "")
+
 	_, ok := words[s]
 	if ok {
 		return true
