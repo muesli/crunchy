@@ -4,9 +4,10 @@ import (
 	"errors"
 	"io/ioutil"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/xrash/smetrics"
 )
 
 var (
@@ -25,6 +26,10 @@ var (
 	ErrTooSystematic = errors.New("Password is too systematic")
 	// ErrDictionary gets returned when the password is found in a dictionary
 	ErrDictionary = errors.New("Password is too common / from a dictionary")
+	// ErrMangledDictionary gets returned when the password is mangled, but found in a dictionary
+	ErrMangledDictionary = errors.New("Password is mangled, but too common / from a dictionary")
+	// ErrHashedDictionary gets returned when the password is hashed, but found in a dictionary
+	ErrHashedDictionary = errors.New("Password is hashed, but too common / from a dictionary")
 
 	once  sync.Once
 	words = make(map[string]struct{})
@@ -88,20 +93,39 @@ func indexDictionaries() {
 	}
 }
 
-func foundInDictionaries(s string) bool {
+func foundInDictionaries(s string) (string, error) {
 	once.Do(indexDictionaries)
 
-	s = normalize(s)
-	reg, _ := regexp.Compile("[^a-z]+")
-	s = reg.ReplaceAllString(s, "")
-
-	_, ok := words[s]
-	if ok {
-		return true
+	pw := normalize(s)     // normalized password
+	revpw := reverse(pw)   // reversed password
+	mindist := len(pw) / 2 // minimum distance
+	if mindist > 3 {
+		mindist = 3
 	}
 
-	_, ok = words[reverse(s)]
-	return ok
+	// let's check perfect matches first
+	if _, ok := words[pw]; ok {
+		if s == pw {
+			return pw, ErrDictionary
+		}
+		return pw, ErrMangledDictionary
+	}
+	if _, ok := words[revpw]; ok {
+		return revpw, ErrMangledDictionary
+	}
+
+	for word := range words {
+		if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= mindist {
+			// fmt.Printf("%s is too similar to %s\n", pw, word)
+			return word, ErrMangledDictionary
+		}
+		if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= mindist {
+			// fmt.Printf("Reversed %s (%s) is too similar to %s: %d\n", pw, revpw, word, dist)
+			return word, ErrMangledDictionary
+		}
+	}
+
+	return "", nil
 }
 
 // ValidatePassword checks password for common flaws
@@ -123,8 +147,8 @@ func ValidatePassword(password string) error {
 		return ErrTooSystematic
 	}
 
-	if foundInDictionaries(password) {
-		return ErrDictionary
+	if _, err := foundInDictionaries(password); err != nil {
+		return err
 	}
 
 	return nil

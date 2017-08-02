@@ -17,9 +17,10 @@ var (
 		{"abcdef", ErrTooSystematic},
 		{"fedcba", ErrTooSystematic},
 		{"password", ErrDictionary},
-		{"drowssap", ErrDictionary},         // reversed dictionary
-		{"?!_pass12word?!_", ErrDictionary}, // dictionary with mangling
-		{"_!?drow21ssap?!_", ErrDictionary}, // reversed dictionary with mangling
+		{"p@ssw0rd", ErrMangledDictionary},    // dictionary with mangling
+		{"!pass@word?", ErrMangledDictionary}, // dictionary with mangling
+		{"drowssap", ErrMangledDictionary},    // reversed dictionary
+		{"?drow@ssap!", ErrMangledDictionary}, // reversed dictionary with mangling
 		{"intoxicate", ErrDictionary},
 	}
 	validPws = []string{"d1924ce3d0510b2b2b4604c99453e2e1"}
