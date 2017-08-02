@@ -13,8 +13,12 @@ import (
 var (
 	// MinDiff is the minimum amount of unique characters required for a valid password
 	MinDiff = 5
+	// MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups
+	MinDist = 3
 	// MinLength is the minimum length required for a valid password
 	MinLength = 6
+	// DictionaryPath contains all the dictionaries that will be parsed
+	DictionaryPath = "/usr/share/dict"
 
 	// ErrEmpty gets returned when the password is empty or all whitespace
 	ErrEmpty = errors.New("Password is empty or all whitespace")
@@ -28,8 +32,6 @@ var (
 	ErrDictionary = errors.New("Password is too common / from a dictionary")
 	// ErrMangledDictionary gets returned when the password is mangled, but found in a dictionary
 	ErrMangledDictionary = errors.New("Password is mangled, but too common / from a dictionary")
-	// ErrHashedDictionary gets returned when the password is hashed, but found in a dictionary
-	ErrHashedDictionary = errors.New("Password is hashed, but too common / from a dictionary")
 
 	once  sync.Once
 	words = make(map[string]struct{})
@@ -76,7 +78,7 @@ func normalize(s string) string {
 }
 
 func indexDictionaries() {
-	dicts, err := filepath.Glob("/usr/share/dict/*")
+	dicts, err := filepath.Glob(filepath.Join(DictionaryPath, "*"))
 	if err != nil {
 		return
 	}
@@ -99,8 +101,8 @@ func foundInDictionaries(s string) (string, error) {
 	pw := normalize(s)     // normalized password
 	revpw := reverse(pw)   // reversed password
 	mindist := len(pw) / 2 // minimum distance
-	if mindist > 3 {
-		mindist = 3
+	if mindist > MinDist {
+		mindist = MinDist
 	}
 
 	// let's check perfect matches first
