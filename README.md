@@ -8,6 +8,7 @@ Detects:
  - Too short passwords `ErrTooShort`
  - Systematic passwords, like "abcdef" or "654321" `ErrTooSystematic`
  - Passwords from a dictionary / wordlist `ErrDictionary`
+ - Mangled/reversed passwords like "p@ssw0rd" or "drowssap" `ErrMangledDictionary`
 
 ## Installation
 
