@@ -25,41 +25,47 @@ var (
 	ErrMangledDictionary = errors.New("Password is mangled, but too common / from a dictionary")
 )
 
+// Validator is used to setup a new password validator with options and dictionaries
 type Validator struct {
-	// minDiff is the minimum amount of unique characters required for a valid password
-	minDiff int // = 5
-	// minDist is the minimum WagnerFischer distance for mangled password dictionary lookups
-	minDist int // = 3
-	// minLength is the minimum length required for a valid password
-	minLength int // = 6
-	// dictionaryPath contains all the dictionaries that will be parsed
-	dictionaryPath string // = "/usr/share/dict"
-
-	once  sync.Once
-	words map[string]struct{}
+	options Options
+	once    sync.Once
+	words   map[string]struct{}
 }
 
+// Options contains all the settings for a Validator
+type Options struct {
+	// MinLength is the minimum length required for a valid password (>=1, default is 8)
+	MinLength int
+	// MinDiff is the minimum amount of unique characters required for a valid password (>=1, default is 5)
+	MinDiff int
+	// MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups (>=0, default is 3)
+	MinDist int
+	// DictionaryPath contains all the dictionaries that will be parsed
+	DictionaryPath string // = "/usr/share/dict"
+}
+
+// NewValidator returns a new password validator with default settings
 func NewValidator() *Validator {
-	return NewValidatorWithOpts(-1, -1, -1, "/usr/share/dict")
+	return NewValidatorWithOpts(Options{
+		MinDist:        -1,
+		DictionaryPath: "/usr/share/dict"})
 }
 
-func NewValidatorWithOpts(minDiff, minDist, minLength int, dictionaryPath string) *Validator {
-	if minDiff < 0 {
-		minDiff = 5
+// NewValidatorWithOpts returns a new password validator with custom settings
+func NewValidatorWithOpts(options Options) *Validator {
+	if options.MinLength <= 0 {
+		options.MinLength = 8
 	}
-	if minDist < 0 {
-		minDist = 3
+	if options.MinDiff <= 0 {
+		options.MinDiff = 5
 	}
-	if minLength < 0 {
-		minLength = 8
+	if options.MinDist < 0 {
+		options.MinDist = 3
 	}
 
 	return &Validator{
-		minDiff:        minDiff,
-		minDist:        minDist,
-		minLength:      minLength,
-		dictionaryPath: dictionaryPath,
-		words:          make(map[string]struct{}),
+		options: options,
+		words:   make(map[string]struct{}),
 	}
 }
 
@@ -109,11 +115,11 @@ func normalize(s string) string {
 
 // indexDictionaries parses dictionaries/wordlists
 func (v *Validator) indexDictionaries() {
-	if v.dictionaryPath == "" {
+	if v.options.DictionaryPath == "" {
 		return
 	}
 
-	dicts, err := filepath.Glob(filepath.Join(v.dictionaryPath, "*"))
+	dicts, err := filepath.Glob(filepath.Join(v.options.DictionaryPath, "*"))
 	if err != nil {
 		return
 	}
@@ -125,7 +131,13 @@ func (v *Validator) indexDictionaries() {
 		}
 
 		for _, word := range strings.Split(string(buf), "\n") {
-			v.words[normalize(word)] = struct{}{}
+			nw := normalize(word)
+
+			// if a word is smaller than the minimum length minus the minimum distance
+			// then any collisons would have been rejected by pre-dictionary checks
+			if len(nw) >= v.options.MinLength-v.options.MinDist {
+				v.words[nw] = struct{}{}
+			}
 		}
 	}
 }
@@ -134,12 +146,8 @@ func (v *Validator) indexDictionaries() {
 func (v *Validator) foundInDictionaries(s string) (string, error) {
 	v.once.Do(v.indexDictionaries)
 
-	pw := normalize(s)     // normalized password
-	revpw := reverse(pw)   // reversed password
-	mindist := len(pw) / 2 // minimum distance
-	if mindist > v.minDist {
-		mindist = v.minDist
-	}
+	pw := normalize(s)   // normalized password
+	revpw := reverse(pw) // reversed password
 
 	// let's check perfect matches first
 	if _, ok := v.words[pw]; ok {
@@ -151,11 +159,11 @@ func (v *Validator) foundInDictionaries(s string) (string, error) {
 
 	// find mangled / reversed passwords
 	for word := range v.words {
-		if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= mindist {
-			// fmt.Printf("%s is too similar to %s\n", pw, word)
+		if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= v.options.MinDist {
+			// fmt.Printf("%s is too similar to %s: %d\n", pw, word, dist)
 			return word, ErrMangledDictionary
 		}
-		if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= mindist {
+		if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= v.options.MinDist {
 			// fmt.Printf("Reversed %s (%s) is too similar to %s: %d\n", pw, revpw, word, dist)
 			return word, ErrMangledDictionary
 		}
@@ -164,16 +172,16 @@ func (v *Validator) foundInDictionaries(s string) (string, error) {
 	return "", nil
 }
 
-// ValidatePassword checks password for common flaws
+// Check validates a password for common flaws
 // It returns nil if the password is considered acceptable.
 func (v *Validator) Check(password string) error {
 	if strings.TrimSpace(password) == "" {
 		return ErrEmpty
 	}
-	if len(password) < v.minLength {
+	if len(password) < v.options.MinLength {
 		return ErrTooShort
 	}
-	if countUniqueChars(password) < v.minDiff {
+	if countUniqueChars(password) < v.options.MinDiff {
 		return ErrTooFewChars
 	}
 
