@@ -1,3 +1,10 @@
+/*
+ * crunchy - find common flaws in passwords
+ *     Copyright (c) 2017, Christian Muehlhaeuser <muesli@gmail.com>
+ *
+ *   For license see LICENSE
+ */
+
 package crunchy
 
 import (
