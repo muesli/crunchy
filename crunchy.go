@@ -11,15 +11,6 @@ import (
 )
 
 var (
-	// MinDiff is the minimum amount of unique characters required for a valid password
-	MinDiff = 5
-	// MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups
-	MinDist = 3
-	// MinLength is the minimum length required for a valid password
-	MinLength = 6
-	// DictionaryPath contains all the dictionaries that will be parsed
-	DictionaryPath = "/usr/share/dict"
-
 	// ErrEmpty gets returned when the password is empty or all whitespace
 	ErrEmpty = errors.New("Password is empty or all whitespace")
 	// ErrTooShort gets returned when the password is not long enough
@@ -32,10 +23,45 @@ var (
 	ErrDictionary = errors.New("Password is too common / from a dictionary")
 	// ErrMangledDictionary gets returned when the password is mangled, but found in a dictionary
 	ErrMangledDictionary = errors.New("Password is mangled, but too common / from a dictionary")
+)
+
+type Validator struct {
+	// minDiff is the minimum amount of unique characters required for a valid password
+	minDiff int // = 5
+	// minDist is the minimum WagnerFischer distance for mangled password dictionary lookups
+	minDist int // = 3
+	// minLength is the minimum length required for a valid password
+	minLength int // = 6
+	// dictionaryPath contains all the dictionaries that will be parsed
+	dictionaryPath string // = "/usr/share/dict"
 
 	once  sync.Once
-	words = make(map[string]struct{})
-)
+	words map[string]struct{}
+}
+
+func NewValidator() *Validator {
+	return NewValidatorWithOpts(-1, -1, -1, "/usr/share/dict")
+}
+
+func NewValidatorWithOpts(minDiff, minDist, minLength int, dictionaryPath string) *Validator {
+	if minDiff < 0 {
+		minDiff = 5
+	}
+	if minDist < 0 {
+		minDist = 3
+	}
+	if minLength < 0 {
+		minLength = 8
+	}
+
+	return &Validator{
+		minDiff:        minDiff,
+		minDist:        minDist,
+		minLength:      minLength,
+		dictionaryPath: dictionaryPath,
+		words:          make(map[string]struct{}),
+	}
+}
 
 // countUniqueChars returns the amount of unique runes in a string
 func countUniqueChars(s string) int {
@@ -82,8 +108,12 @@ func normalize(s string) string {
 }
 
 // indexDictionaries parses dictionaries/wordlists
-func indexDictionaries() {
-	dicts, err := filepath.Glob(filepath.Join(DictionaryPath, "*"))
+func (v *Validator) indexDictionaries() {
+	if v.dictionaryPath == "" {
+		return
+	}
+
+	dicts, err := filepath.Glob(filepath.Join(v.dictionaryPath, "*"))
 	if err != nil {
 		return
 	}
@@ -95,31 +125,32 @@ func indexDictionaries() {
 		}
 
 		for _, word := range strings.Split(string(buf), "\n") {
-			words[normalize(word)] = struct{}{}
+			v.words[normalize(word)] = struct{}{}
 		}
 	}
 }
 
 // foundInDictionaries returns whether a (mangled) string exists in the indexed dictionaries
-func foundInDictionaries(s string) (string, error) {
-	once.Do(indexDictionaries)
+func (v *Validator) foundInDictionaries(s string) (string, error) {
+	v.once.Do(v.indexDictionaries)
 
 	pw := normalize(s)     // normalized password
 	revpw := reverse(pw)   // reversed password
 	mindist := len(pw) / 2 // minimum distance
-	if mindist > MinDist {
-		mindist = MinDist
+	if mindist > v.minDist {
+		mindist = v.minDist
 	}
 
 	// let's check perfect matches first
-	if _, ok := words[pw]; ok {
+	if _, ok := v.words[pw]; ok {
 		return pw, ErrDictionary
 	}
-	if _, ok := words[revpw]; ok {
+	if _, ok := v.words[revpw]; ok {
 		return revpw, ErrMangledDictionary
 	}
 
-	for word := range words {
+	// find mangled / reversed passwords
+	for word := range v.words {
 		if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= mindist {
 			// fmt.Printf("%s is too similar to %s\n", pw, word)
 			return word, ErrMangledDictionary
@@ -135,14 +166,14 @@ func foundInDictionaries(s string) (string, error) {
 
 // ValidatePassword checks password for common flaws
 // It returns nil if the password is considered acceptable.
-func ValidatePassword(password string) error {
+func (v *Validator) Check(password string) error {
 	if strings.TrimSpace(password) == "" {
 		return ErrEmpty
 	}
-	if len(password) < MinLength {
+	if len(password) < v.minLength {
 		return ErrTooShort
 	}
-	if countUniqueChars(password) < MinDiff {
+	if countUniqueChars(password) < v.minDiff {
 		return ErrTooFewChars
 	}
 
@@ -152,7 +183,7 @@ func ValidatePassword(password string) error {
 		return ErrTooSystematic
 	}
 
-	if _, err := foundInDictionaries(password); err != nil {
+	if _, err := v.foundInDictionaries(password); err != nil {
 		return err
 	}
 

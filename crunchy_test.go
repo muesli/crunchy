@@ -9,13 +9,13 @@ var (
 	}{
 		{"", ErrEmpty},
 		{" ", ErrEmpty},
-		{"crnch", ErrTooShort},
-		{"aaaaaa", ErrTooFewChars},
-		{"abcddd", ErrTooFewChars},
-		{"123456", ErrTooSystematic},
-		{"654321", ErrTooSystematic},
-		{"abcdef", ErrTooSystematic},
-		{"fedcba", ErrTooSystematic},
+		{"crunchy", ErrTooShort},
+		{"aaaaaaaa", ErrTooFewChars},
+		{"aabbccdd", ErrTooFewChars},
+		{"12345678", ErrTooSystematic},
+		{"87654321", ErrTooSystematic},
+		{"abcdefgh", ErrTooSystematic},
+		{"hgfedcba", ErrTooSystematic},
 		{"password", ErrDictionary},
 		{"p@ssw0rd", ErrMangledDictionary},    // dictionary with mangling
 		{"!pass@word?", ErrMangledDictionary}, // dictionary with mangling
@@ -27,15 +27,16 @@ var (
 )
 
 func TestValidatePassword(t *testing.T) {
+	v := NewValidator()
 	for _, pw := range validPws {
-		err := ValidatePassword(pw)
+		err := v.Check(pw)
 		if err != nil {
 			t.Errorf("Expected no error for valid password '%s', got %v", pw, err)
 		}
 	}
 
 	for _, pw := range invalidPws {
-		err := ValidatePassword(pw.pw)
+		err := v.Check(pw.pw)
 		if err != pw.expected {
 			t.Errorf("Expected %v for invalid password '%s', got %v", pw.expected, pw.pw, err)
 		}

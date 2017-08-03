@@ -6,10 +6,10 @@ Finds common flaws in passwords. Like cracklib, but written in Go.
 Detects:
  - Empty passwords: `ErrEmpty`
  - Too short passwords: `ErrTooShort`
- - Too few different characters, like "abcddd": `ErrTooFewChars`
- - Systematic passwords, like "abcdef" or "654321": `ErrTooSystematic`
+ - Too few different characters, like "aabbccdd": `ErrTooFewChars`
+ - Systematic passwords, like "abcdefgh" or "87654321": `ErrTooSystematic`
  - Passwords from a dictionary / wordlist: `ErrDictionary`
- - Mangled / reversed passwords like "p@ssw0rd" or "drowssap": `ErrMangledDictionary`
+ - Mangled / reversed passwords, like "p@ssw0rd" or "drowssap": `ErrMangledDictionary`
 
 Your system dictionaries from /usr/share/dict will be indexed. If no dictionaries were found, crunchy only relies on the
 regular sanity checks (ErrEmpty, ErrTooShort and ErrTooSystematic). On Ubuntu it is recommended to install the wordlists
@@ -42,12 +42,15 @@ import (
 )
 
 func main() {
-    err := crunchy.ValidatePassword("123456")
+    validator := crunchy.NewValidator()
+    // there's also crunchy.NewValidatorWithOpts()
+
+    err := validator.Check("12345678")
     if err != nil {
-        fmt.Printf("The password '%s' is considered unsafe: %v\n", "123456", err)
+        fmt.Printf("The password '%s' is considered unsafe: %v\n", "12345678", err)
     }
 
-    err = crunchy.ValidatePassword("d1924ce3d0510b2b2b4604c99453e2e1")
+    err = validator.Check("d1924ce3d0510b2b2b4604c99453e2e1")
     if err == nil {
         // Password is considered acceptable
         ...
