@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"hash"
+	"strconv"
 	"testing"
 )
 
@@ -58,5 +59,14 @@ func TestValidatePassword(t *testing.T) {
 		if err != pw.expected {
 			t.Errorf("Expected %v for invalid password '%s', got %v", pw.expected, pw.pw, err)
 		}
+	}
+}
+
+func BenchmarkValidatePassword(b *testing.B) {
+	v := NewValidator()
+	s := hashsum(strconv.Itoa(b.N), md5.New())
+
+	for n := 0; n < b.N; n++ {
+		v.Check(s)
 	}
 }
