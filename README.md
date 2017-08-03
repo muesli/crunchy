@@ -10,6 +10,7 @@ Detects:
  - Systematic passwords, like "abcdefgh" or "87654321": `ErrTooSystematic`
  - Passwords from a dictionary / wordlist: `ErrDictionary`
  - Mangled / reversed passwords, like "p@ssw0rd" or "drowssap": `ErrMangledDictionary`
+ - Hashed dictionary words, like "5f4dcc3b5aa765d61d8327deb882cf99" (the md5sum of "password"): `ErrHashedDictionary`
 
 Your system dictionaries from /usr/share/dict will be indexed. If no dictionaries were found, crunchy only relies on the
 regular sanity checks (ErrEmpty, ErrTooShort and ErrTooSystematic). On Ubuntu it is recommended to install the wordlists

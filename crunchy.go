@@ -1,7 +1,9 @@
 package crunchy
 
 import (
+	"encoding/hex"
 	"errors"
+	"hash"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -23,13 +25,16 @@ var (
 	ErrDictionary = errors.New("Password is too common / from a dictionary")
 	// ErrMangledDictionary gets returned when the password is mangled, but found in a dictionary
 	ErrMangledDictionary = errors.New("Password is mangled, but too common / from a dictionary")
+	// ErrHashedDictionary gets returned when the password is hashed, but found in a dictionary
+	ErrHashedDictionary = errors.New("Password is hashed, but too common / from a dictionary")
 )
 
 // Validator is used to setup a new password validator with options and dictionaries
 type Validator struct {
-	options Options
-	once    sync.Once
-	words   map[string]struct{}
+	options     Options
+	once        sync.Once
+	words       map[string]struct{}
+	hashedWords map[string]string
 }
 
 // Options contains all the settings for a Validator
@@ -40,6 +45,8 @@ type Options struct {
 	MinDiff int
 	// MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups (>=0, default is 3)
 	MinDist int
+	// Hashers will be used to find hashed passwords in dictionaries
+	Hashers []hash.Hash
 	// DictionaryPath contains all the dictionaries that will be parsed
 	DictionaryPath string // = "/usr/share/dict"
 }
@@ -64,8 +71,9 @@ func NewValidatorWithOpts(options Options) *Validator {
 	}
 
 	return &Validator{
-		options: options,
-		words:   make(map[string]struct{}),
+		options:     options,
+		words:       make(map[string]struct{}),
+		hashedWords: make(map[string]string),
 	}
 }
 
@@ -113,6 +121,13 @@ func normalize(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
+// hashsum returns the hashed sum of a string
+func hashsum(s string, hasher hash.Hash) string {
+	hasher.Reset()
+	hasher.Write([]byte(s))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
 // indexDictionaries parses dictionaries/wordlists
 func (v *Validator) indexDictionaries() {
 	if v.options.DictionaryPath == "" {
@@ -138,6 +153,10 @@ func (v *Validator) indexDictionaries() {
 			if len(nw) >= v.options.MinLength-v.options.MinDist {
 				v.words[nw] = struct{}{}
 			}
+
+			for _, hasher := range v.options.Hashers {
+				v.hashedWords[hashsum(nw, hasher)] = nw
+			}
 		}
 	}
 }
@@ -155,6 +174,11 @@ func (v *Validator) foundInDictionaries(s string) (string, error) {
 	}
 	if _, ok := v.words[revpw]; ok {
 		return revpw, ErrMangledDictionary
+	}
+
+	// find hashed dictionary entries
+	if _, ok := v.hashedWords[pw]; ok {
+		return pw, ErrHashedDictionary
 	}
 
 	// find mangled / reversed passwords
