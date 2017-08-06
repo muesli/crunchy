@@ -52,7 +52,7 @@ func main() {
 
     err = validator.Check("p@ssw0rd")
     if dicterr, ok := err.(*crunchy.DictionaryError); ok {
-        fmt.Printf("The password 'p@ssw0rd' is considered too similar to dictionary word '%s' (distance %d)\n",
+        fmt.Printf("The password 'p@ssw0rd' is too similar to dictionary word '%s' (distance %d)\n",
             dicterr.Word, dicterr.Distance)
     }
 
@@ -75,16 +75,24 @@ import (
 
 func main() {
     validator := crunchy.NewValidatorWithOpts(Options{
-        // MinLength is the minimum length required for a valid password (>=1, default is 8)
+        // MinLength is the minimum length required for a valid password
+	// (must be >= 1, default is 8)
         MinLength:      10,
-        // MinDiff is the minimum amount of unique characters required for a valid password (>=1, default is 5)
+
+        // MinDiff is the minimum amount of unique characters required for a valid password
+	// (must be >= 1, default ist 5)
         MinDiff:        8,
-        // MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups (>=0, default is 3)
-		MinDist:        4,
+
+        // MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups
+	// (must be >= 0, default is 3)
+	MinDist:        4,
+
         // Hashers will be used to find hashed passwords in dictionaries
-		Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
-        // DictionaryPath contains all the dictionaries that will be parsed (default is /usr/share/dict)
-		DictionaryPath: "/var/my/own/dicts",
+	Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
+
+        // DictionaryPath contains all the dictionaries that will be parsed
+	// (default is /usr/share/dict)
+	DictionaryPath: "/var/my/own/dicts",
 	})
     ...
 }
