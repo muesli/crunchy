@@ -93,8 +93,8 @@ func main() {
         // DictionaryPath contains all the dictionaries that will be parsed
         // (default is /usr/share/dict)
         DictionaryPath: "/var/my/own/dicts",
-	})
-	...
+    })
+    ...
 }
 ```
 
