@@ -54,15 +54,16 @@ type Options struct {
 	MinDist int
 	// Hashers will be used to find hashed passwords in dictionaries
 	Hashers []hash.Hash
-	// DictionaryPath contains all the dictionaries that will be parsed
-	DictionaryPath string // = "/usr/share/dict"
+	// DictionaryPath contains all the dictionaries that will be parsed (default is /usr/share/dict)
+	DictionaryPath string
 }
 
 // NewValidator returns a new password validator with default settings
 func NewValidator() *Validator {
 	return NewValidatorWithOpts(Options{
 		MinDist:        -1,
-		DictionaryPath: "/usr/share/dict"})
+		DictionaryPath: "/usr/share/dict",
+	})
 }
 
 // NewValidatorWithOpts returns a new password validator with custom settings
