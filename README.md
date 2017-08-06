@@ -76,23 +76,23 @@ import (
 func main() {
     validator := crunchy.NewValidatorWithOpts(Options{
         // MinLength is the minimum length required for a valid password
-	// (must be >= 1, default is 8)
+        // (must be >= 1, default is 8)
         MinLength:      10,
 
         // MinDiff is the minimum amount of unique characters required for a valid password
-	// (must be >= 1, default ist 5)
+        // (must be >= 1, default ist 5)
         MinDiff:        8,
 
         // MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups
-	// (must be >= 0, default is 3)
-	MinDist:        4,
+        // (must be >= 0, default is 3)
+        MinDist:        4,
 
         // Hashers will be used to find hashed passwords in dictionaries
-	Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
+        Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
 
         // DictionaryPath contains all the dictionaries that will be parsed
-	// (default is /usr/share/dict)
-	DictionaryPath: "/var/my/own/dicts",
+        // (default is /usr/share/dict)
+        DictionaryPath: "/var/my/own/dicts",
 	})
     ...
 }
