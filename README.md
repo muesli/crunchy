@@ -74,13 +74,13 @@ import (
 )
 
 func main() {
-    validator := crunchy.NewValidatorWithOpts(Options{
+    validator := crunchy.NewValidatorWithOpts(crunchy.Options{
         // MinLength is the minimum length required for a valid password
         // (must be >= 1, default is 8)
         MinLength: 10,
 
         // MinDiff is the minimum amount of unique characters required for a valid password
-        // (must be >= 1, default ist 5)
+        // (must be >= 1, default is 5)
         MinDiff: 8,
 
         // MinDist is the minimum WagnerFischer distance for mangled password dictionary lookups
@@ -94,7 +94,7 @@ func main() {
         // (default is /usr/share/dict)
         DictionaryPath: "/var/my/own/dicts",
 	})
-    ...
+	...
 }
 ```
 
