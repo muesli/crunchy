@@ -63,6 +63,12 @@ func TestValidatePassword(t *testing.T) {
 
 	for _, pw := range invalidPws {
 		err := v.Check(pw.pw)
+		if dicterr, ok := err.(*DictionaryError); ok {
+			err = dicterr.Err
+		} else if hasherr, ok := err.(*HashedDictionaryError); ok {
+			err = hasherr.Err
+		}
+
 		if err != pw.expected {
 			t.Errorf("Expected %v for invalid password '%s', got %v", pw.expected, pw.pw, err)
 		}
