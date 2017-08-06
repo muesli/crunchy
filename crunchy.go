@@ -40,6 +40,7 @@ var (
 type Validator struct {
 	options     Options
 	once        sync.Once
+	wordsMaxLen int
 	words       map[string]struct{}
 	hashedWords map[string]string
 }
@@ -155,10 +156,14 @@ func (v *Validator) indexDictionaries() {
 
 		for _, word := range strings.Split(string(buf), "\n") {
 			nw := normalize(word)
+			nwlen := len(nw)
+			if nwlen > v.wordsMaxLen {
+				v.wordsMaxLen = nwlen
+			}
 
 			// if a word is smaller than the minimum length minus the minimum distance
 			// then any collisons would have been rejected by pre-dictionary checks
-			if len(nw) >= v.options.MinLength-v.options.MinDist {
+			if nwlen >= v.options.MinLength-v.options.MinDist {
 				v.words[nw] = struct{}{}
 			}
 
@@ -175,13 +180,17 @@ func (v *Validator) foundInDictionaries(s string) (string, error) {
 
 	pw := normalize(s)   // normalized password
 	revpw := reverse(pw) // reversed password
+	pwlen := len(pw)
 
 	// let's check perfect matches first
-	if _, ok := v.words[pw]; ok {
-		return pw, ErrDictionary
-	}
-	if _, ok := v.words[revpw]; ok {
-		return revpw, ErrMangledDictionary
+	// we can skip this if the pw is longer than the longest word in our dictionary
+	if pwlen <= v.wordsMaxLen {
+		if _, ok := v.words[pw]; ok {
+			return pw, ErrDictionary
+		}
+		if _, ok := v.words[revpw]; ok {
+			return revpw, ErrMangledDictionary
+		}
 	}
 
 	// find hashed dictionary entries
@@ -190,14 +199,15 @@ func (v *Validator) foundInDictionaries(s string) (string, error) {
 	}
 
 	// find mangled / reversed passwords
-	for word := range v.words {
-		if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= v.options.MinDist {
-			// fmt.Printf("%s is too similar to %s: %d\n", pw, word, dist)
-			return word, ErrMangledDictionary
-		}
-		if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= v.options.MinDist {
-			// fmt.Printf("Reversed %s (%s) is too similar to %s: %d\n", pw, revpw, word, dist)
-			return word, ErrMangledDictionary
+	// we can skip this if the pw is longer than the longest word plus our minimum distance
+	if pwlen <= v.wordsMaxLen+v.options.MinDist {
+		for word := range v.words {
+			if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= v.options.MinDist {
+				return word, ErrMangledDictionary
+			}
+			if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= v.options.MinDist {
+				return word, ErrMangledDictionary
+			}
 		}
 	}
 
