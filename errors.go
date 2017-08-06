@@ -11,12 +11,14 @@ import (
 	"errors"
 )
 
+// DictionaryError wraps an ErrMangledDictionary with contextual information
 type DictionaryError struct {
 	Err      error
 	Word     string
 	Distance int
 }
 
+// HashedDictionaryError wraps an ErrHashedDictionary with contextual information
 type HashedDictionaryError struct {
 	Err  error
 	Word string
