@@ -105,7 +105,7 @@ func (v *Validator) indexDictionaries() {
 }
 
 // foundInDictionaries returns whether a (mangled) string exists in the indexed dictionaries
-func (v *Validator) foundInDictionaries(s string) (string, error) {
+func (v *Validator) foundInDictionaries(s string) error {
 	v.once.Do(v.indexDictionaries)
 
 	pw := normalize(s)   // normalized password
@@ -116,16 +116,16 @@ func (v *Validator) foundInDictionaries(s string) (string, error) {
 	// we can skip this if the pw is longer than the longest word in our dictionary
 	if pwlen <= v.wordsMaxLen {
 		if _, ok := v.words[pw]; ok {
-			return pw, &DictionaryError{ErrDictionary, pw, 0}
+			return &DictionaryError{ErrDictionary, pw, 0}
 		}
 		if _, ok := v.words[revpw]; ok {
-			return revpw, &DictionaryError{ErrMangledDictionary, revpw, 0}
+			return &DictionaryError{ErrMangledDictionary, revpw, 0}
 		}
 	}
 
 	// find hashed dictionary entries
 	if word, ok := v.hashedWords[pw]; ok {
-		return pw, &HashedDictionaryError{ErrHashedDictionary, word}
+		return &HashedDictionaryError{ErrHashedDictionary, word}
 	}
 
 	// find mangled / reversed passwords
@@ -133,15 +133,15 @@ func (v *Validator) foundInDictionaries(s string) (string, error) {
 	if pwlen <= v.wordsMaxLen+v.options.MinDist {
 		for word := range v.words {
 			if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= v.options.MinDist {
-				return word, &DictionaryError{ErrMangledDictionary, word, dist}
+				return &DictionaryError{ErrMangledDictionary, word, dist}
 			}
 			if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= v.options.MinDist {
-				return word, &DictionaryError{ErrMangledDictionary, word, dist}
+				return &DictionaryError{ErrMangledDictionary, word, dist}
 			}
 		}
 	}
 
-	return "", nil
+	return nil
 }
 
 // Check validates a password for common flaws
@@ -163,9 +163,5 @@ func (v *Validator) Check(password string) error {
 		return ErrTooSystematic
 	}
 
-	if _, err := v.foundInDictionaries(password); err != nil {
-		return err
-	}
-
-	return nil
+	return v.foundInDictionaries(password)
 }
