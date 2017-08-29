@@ -102,6 +102,6 @@ func main() {
 
 API docs can be found [here](http://godoc.org/github.com/muesli/crunchy).
 
-[![Build Status](https://secure.travis-ci.org/muesli/crunchy.png)](http://travis-ci.org/muesli/crunchy)
+[![Build Status](https://travis-ci.org/muesli/crunchy.svg?branch=master)](https://travis-ci.org/muesli/crunchy)
 [![Coverage Status](https://coveralls.io/repos/github/muesli/crunchy/badge.svg?branch=master)](https://coveralls.io/github/muesli/crunchy?branch=master)
 [![Go ReportCard](http://goreportcard.com/badge/muesli/crunchy)](http://goreportcard.com/report/muesli/crunchy)
