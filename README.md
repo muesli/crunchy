@@ -21,7 +21,8 @@ crunchy uses the WagnerFischer algorithm to find mangled passwords in your dicti
 
 ## Installation
 
-Make sure you have a working Go environment. See the [install instructions](http://golang.org/doc/install.html).
+Make sure you have a working Go environment (Go 1.2 or higher is required).
+See the [install instructions](http://golang.org/doc/install.html).
 
 To install crunchy, simply run:
 
