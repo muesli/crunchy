@@ -11,6 +11,8 @@ import (
 	"encoding/hex"
 	"hash"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // countUniqueChars returns the amount of unique runes in a string
@@ -18,6 +20,7 @@ func countUniqueChars(s string) int {
 	m := make(map[rune]struct{})
 
 	for _, c := range s {
+		c = unicode.ToLower(c)
 		if _, ok := m[c]; !ok {
 			m[c] = struct{}{}
 		}
