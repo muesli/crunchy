@@ -1,6 +1,6 @@
 /*
  * crunchy - find common flaws in passwords
- *     Copyright (c) 2017, Christian Muehlhaeuser <muesli@gmail.com>
+ *     Copyright (c) 2017-2018, Christian Muehlhaeuser <muesli@gmail.com>
  *
  *   For license see LICENSE
  */
@@ -21,9 +21,9 @@ import (
 type Validator struct {
 	options     Options
 	once        sync.Once
-	wordsMaxLen int
-	words       map[string]struct{}
-	hashedWords map[string]string
+	wordsMaxLen int                 // length of longest word in dictionaries
+	words       map[string]struct{} // map to index parsed dictionaries
+	hashedWords map[string]string   // maps hash-sum to password
 }
 
 // Options contains all the settings for a Validator
