@@ -169,11 +169,15 @@ func (v *Validator) Check(password string) error {
 }
 
 // Rate grades a password's strength from 0 (weak) to 255 (strong).
-func (v *Validator) Rate(password string) uint {
+func (v *Validator) Rate(password string) (uint, error) {
+	if err := v.Check(password); err != nil {
+		return 0, err
+	}
+
 	l := len(password)
 	systematics := countSystematicChars(password)
 	repeats := l - countUniqueChars(password)
-	var letters, uLetters, numbers, symbols, others int
+	var letters, uLetters, numbers, symbols int
 
 	for len(password) > 0 {
 		r, size := utf8.DecodeRuneInString(password)
@@ -187,15 +191,13 @@ func (v *Validator) Rate(password string) uint {
 			}
 		} else if unicode.IsNumber(r) {
 			numbers++
-		} else if unicode.IsSymbol(r) || unicode.IsPunct(r) {
-			symbols++
 		} else {
-			others++
+			symbols++
 		}
 	}
 
 	// ADD: number of characters
-	n := l * 4 // length * 4
+	n := l * 4
 	// ADD: uppercase letters
 	if uLetters > 0 {
 		n += (l - uLetters) * 2
@@ -227,5 +229,5 @@ func (v *Validator) Rate(password string) uint {
 	} else if n > 100 {
 		n = 100
 	}
-	return uint(n)
+	return uint(n), nil
 }

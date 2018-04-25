@@ -25,6 +25,8 @@ var (
 	}{
 		// valid passwords
 		{"d1924ce3d0510b2b2b4604c99453e2e1", nil, 100},
+		{"aCgIknPv", nil, 40},
+		{"1347902586", nil, 37},
 		{"aEc!1Edek?", nil, 71},
 		{"aEc!1Edek?f", nil, 77},
 		{"aEc!1Edek?f_", nil, 91},
@@ -32,31 +34,31 @@ var (
 
 		// invalid passwords
 		{"", ErrEmpty, 0},
-		{" ", ErrEmpty, 4},
-		{"crunchy", ErrTooShort, 17},
+		{" ", ErrEmpty, 0},
+		{"crunchy", ErrTooShort, 0},
 		{"aaaaaaaa", ErrTooFewChars, 0},
 		{"aabbccdd", ErrTooFewChars, 0},
-		{"aAbBcCdD", ErrTooFewChars, 24},
-		{"12345678", ErrTooSystematic, 11},
-		{"87654321", ErrTooSystematic, 11},
-		{"abcdefgh", ErrTooSystematic, 3},
-		{"hgfedcba", ErrTooSystematic, 3},
+		{"aAbBcCdD", ErrTooFewChars, 0},
+		{"12345678", ErrTooSystematic, 0},
+		{"87654321", ErrTooSystematic, 0},
+		{"abcdefgh", ErrTooSystematic, 0},
+		{"hgfedcba", ErrTooSystematic, 0},
 
-		{"password", ErrDictionary, 20},
-		{"intoxicate", ErrDictionary, 22},
-		{"p@ssw0rd", ErrMangledDictionary, 42},    // dictionary with mangling
-		{"!pass@word?", ErrMangledDictionary, 64}, // dictionary with mangling
-		{"drowssap", ErrMangledDictionary, 20},    // reversed dictionary
-		{"?drow@ssap!", ErrMangledDictionary, 64}, // reversed dictionary with mangling
+		{"password", ErrDictionary, 0},
+		{"intoxicate", ErrDictionary, 0},
+		{"p@ssw0rd", ErrMangledDictionary, 0},    // dictionary with mangling
+		{"!pass@word?", ErrMangledDictionary, 0}, // dictionary with mangling
+		{"drowssap", ErrMangledDictionary, 0},    // reversed dictionary
+		{"?drow@ssap!", ErrMangledDictionary, 0}, // reversed dictionary with mangling
 
 		// md5 dictionary lookup
-		{"5f4dcc3b5aa765d61d8327deb882cf99", ErrHashedDictionary, 100},
+		{"5f4dcc3b5aa765d61d8327deb882cf99", ErrHashedDictionary, 0},
 		// sha1 dictionary lookup
-		{"5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8", ErrHashedDictionary, 100},
+		{"5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8", ErrHashedDictionary, 0},
 		// sha256 dictionary lookup
-		{"5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", ErrHashedDictionary, 100},
+		{"5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", ErrHashedDictionary, 0},
 		// sha512 dictionary lookup
-		{"b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86", ErrHashedDictionary, 100},
+		{"b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86", ErrHashedDictionary, 0},
 	}
 )
 
@@ -68,25 +70,18 @@ func TestValidatePassword(t *testing.T) {
 	})
 
 	for _, pw := range pws {
-		err := v.Check(pw.pw)
+		r, err := v.Rate(pw.pw)
 		if dicterr, ok := err.(*DictionaryError); ok {
 			err = dicterr.Err
 		} else if hasherr, ok := err.(*HashedDictionaryError); ok {
 			err = hasherr.Err
 		}
 
-		if err != pw.expected {
-			t.Errorf("Expected %v for password '%s', got %v", pw.expected, pw.pw, err)
-		}
-	}
-}
-
-func TestRatePassword(t *testing.T) {
-	v := NewValidator()
-	for _, pw := range pws {
-		r := v.Rate(pw.pw)
 		if r != pw.rating {
 			t.Errorf("Expected rating %d for password '%s', got %d", pw.rating, pw.pw, r)
+		}
+		if err != pw.expected {
+			t.Errorf("Expected %v for password '%s', got %v", pw.expected, pw.pw, err)
 		}
 	}
 }
