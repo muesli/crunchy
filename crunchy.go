@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/xrash/smetrics"
 )
@@ -164,4 +166,66 @@ func (v *Validator) Check(password string) error {
 	}
 
 	return v.foundInDictionaries(password)
+}
+
+// Rate grades a password's strength from 0 (weak) to 255 (strong).
+func (v *Validator) Rate(password string) uint {
+	l := len(password)
+	systematics := countSystematicChars(password)
+	repeats := l - countUniqueChars(password)
+	var letters, uLetters, numbers, symbols, others int
+
+	for len(password) > 0 {
+		r, size := utf8.DecodeRuneInString(password)
+		password = password[size:]
+
+		if unicode.IsLetter(r) {
+			if unicode.IsUpper(r) {
+				uLetters++
+			} else {
+				letters++
+			}
+		} else if unicode.IsNumber(r) {
+			numbers++
+		} else if unicode.IsSymbol(r) || unicode.IsPunct(r) {
+			symbols++
+		} else {
+			others++
+		}
+	}
+
+	// ADD: number of characters
+	n := l * 4 // length * 4
+	// ADD: uppercase letters
+	if uLetters > 0 {
+		n += (l - uLetters) * 2
+	}
+	// ADD: lowercase letters
+	if letters > 0 {
+		n += (l - letters) * 2
+	}
+	// ADD: numbers
+	n += numbers * 4
+	// ADD: symbols
+	n += symbols * 6
+
+	// REM: letters only
+	if l == letters+uLetters {
+		n -= letters + uLetters
+	}
+	// REM: numbers only
+	if l == numbers {
+		n -= numbers * 4
+	}
+	// REM: repeat characters (case insensitive)
+	n -= repeats * 4
+	// REM: systematic characters
+	n -= systematics * 3
+
+	if n < 0 {
+		n = 0
+	} else if n > 100 {
+		n = 100
+	}
+	return uint(n)
 }
