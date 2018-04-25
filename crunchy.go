@@ -168,7 +168,7 @@ func (v *Validator) Check(password string) error {
 	return v.foundInDictionaries(password)
 }
 
-// Rate grades a password's strength from 0 (weak) to 255 (strong).
+// Rate grades a password's strength from 0 (weak) to 100 (strong).
 func (v *Validator) Rate(password string) (uint, error) {
 	if err := v.Check(password); err != nil {
 		return 0, err
