@@ -1,6 +1,6 @@
 /*
  * crunchy - find common flaws in passwords
- *     Copyright (c) 2017, Christian Muehlhaeuser <muesli@gmail.com>
+ *     Copyright (c) 2017-2018, Christian Muehlhaeuser <muesli@gmail.com>
  *
  *   For license see LICENSE
  */
@@ -18,33 +18,46 @@ import (
 )
 
 var (
-	invalidPws = []struct {
+	pws = []struct {
 		pw       string
 		expected error
+		rating   uint
 	}{
-		{"", ErrEmpty},
-		{" ", ErrEmpty},
-		{"crunchy", ErrTooShort},
-		{"aaaaaaaa", ErrTooFewChars},
-		{"aabbccdd", ErrTooFewChars},
-		{"12345678", ErrTooSystematic},
-		{"87654321", ErrTooSystematic},
-		{"abcdefgh", ErrTooSystematic},
-		{"hgfedcba", ErrTooSystematic},
+		// valid passwords
+		{"d1924ce3d0510b2b2b4604c99453e2e1", nil, 100},
+		{"aEc!1Edek?", nil, 71},
+		{"aEc!1Edek?f", nil, 77},
+		{"aEc!1Edek?f_", nil, 91},
+		{"aEc!1Edek?f_0", nil, 100},
 
-		{"password", ErrDictionary},
-		{"intoxicate", ErrDictionary},
-		{"p@ssw0rd", ErrMangledDictionary},    // dictionary with mangling
-		{"!pass@word?", ErrMangledDictionary}, // dictionary with mangling
-		{"drowssap", ErrMangledDictionary},    // reversed dictionary
-		{"?drow@ssap!", ErrMangledDictionary}, // reversed dictionary with mangling
+		// invalid passwords
+		{"", ErrEmpty, 0},
+		{" ", ErrEmpty, 4},
+		{"crunchy", ErrTooShort, 17},
+		{"aaaaaaaa", ErrTooFewChars, 0},
+		{"aabbccdd", ErrTooFewChars, 0},
+		{"aAbBcCdD", ErrTooFewChars, 24},
+		{"12345678", ErrTooSystematic, 11},
+		{"87654321", ErrTooSystematic, 11},
+		{"abcdefgh", ErrTooSystematic, 3},
+		{"hgfedcba", ErrTooSystematic, 3},
 
-		{"5f4dcc3b5aa765d61d8327deb882cf99", ErrHashedDictionary},                                                                                                 // md5 dictionary lookup
-		{"5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8", ErrHashedDictionary},                                                                                         // sha1 dictionary lookup
-		{"5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", ErrHashedDictionary},                                                                 // sha256 dictionary lookup
-		{"b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86", ErrHashedDictionary}, // sha512 dictionary lookup
+		{"password", ErrDictionary, 20},
+		{"intoxicate", ErrDictionary, 22},
+		{"p@ssw0rd", ErrMangledDictionary, 42},    // dictionary with mangling
+		{"!pass@word?", ErrMangledDictionary, 64}, // dictionary with mangling
+		{"drowssap", ErrMangledDictionary, 20},    // reversed dictionary
+		{"?drow@ssap!", ErrMangledDictionary, 64}, // reversed dictionary with mangling
+
+		// md5 dictionary lookup
+		{"5f4dcc3b5aa765d61d8327deb882cf99", ErrHashedDictionary, 100},
+		// sha1 dictionary lookup
+		{"5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8", ErrHashedDictionary, 100},
+		// sha256 dictionary lookup
+		{"5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", ErrHashedDictionary, 100},
+		// sha512 dictionary lookup
+		{"b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86", ErrHashedDictionary, 100},
 	}
-	validPws = []string{"d1924ce3d0510b2b2b4604c99453e2e1"}
 )
 
 func TestValidatePassword(t *testing.T) {
@@ -54,14 +67,7 @@ func TestValidatePassword(t *testing.T) {
 		DictionaryPath: "/usr/share/dict",
 	})
 
-	for _, pw := range validPws {
-		err := v.Check(pw)
-		if err != nil {
-			t.Errorf("Expected no error for valid password '%s', got %v", pw, err)
-		}
-	}
-
-	for _, pw := range invalidPws {
+	for _, pw := range pws {
 		err := v.Check(pw.pw)
 		if dicterr, ok := err.(*DictionaryError); ok {
 			err = dicterr.Err
@@ -70,7 +76,17 @@ func TestValidatePassword(t *testing.T) {
 		}
 
 		if err != pw.expected {
-			t.Errorf("Expected %v for invalid password '%s', got %v", pw.expected, pw.pw, err)
+			t.Errorf("Expected %v for password '%s', got %v", pw.expected, pw.pw, err)
+		}
+	}
+}
+
+func TestRatePassword(t *testing.T) {
+	v := NewValidator()
+	for _, pw := range pws {
+		r := v.Rate(pw.pw)
+		if r != pw.rating {
+			t.Errorf("Expected rating %d for password '%s', got %d", pw.rating, pw.pw, r)
 		}
 	}
 }
