@@ -48,10 +48,14 @@ func countSystematicChars(s string) int {
 
 // reverse returns the reversed form of a string
 func reverse(s string) string {
-	rs := []rune(s)
-	for i, j := 0, len(rs)-1; i < j; i, j = i+1, j-1 {
-		rs[i], rs[j] = rs[j], rs[i]
+	var rs []rune
+	for len(s) > 0 {
+		r, size := utf8.DecodeLastRuneInString(s)
+		s = s[:len(s)-size]
+
+		rs = append(rs, r)
 	}
+
 	return string(rs)
 }
 
