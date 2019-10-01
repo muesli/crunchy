@@ -13,6 +13,10 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+	"crypto/sha1"
+	"net/http"
+	"io/ioutil"
+	"log"
 )
 
 // countUniqueChars returns the amount of unique runes in a string
@@ -69,4 +73,31 @@ func hashsum(s string, hasher hash.Hash) string {
 	hasher.Reset()
 	hasher.Write([]byte(s))
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func foundInHIBP(s string) int {
+	bytes := []byte(s)
+	h := sha1.New()
+	h.Write(bytes)
+	result := hex.EncodeToString(h.Sum(nil))
+
+	firstFive := result[0:5]
+	restOfHash := strings.ToUpper(result[5:])
+
+	url := "https://api.pwnedpasswords.com/range/" + firstFive
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return strings.Index(string(body),restOfHash)
+
 }

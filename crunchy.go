@@ -40,6 +40,8 @@ type Options struct {
 	Hashers []hash.Hash
 	// DictionaryPath contains all the dictionaries that will be parsed (default is /usr/share/dict)
 	DictionaryPath string
+	// Check haveibeenpwned.com database
+	CheckHIBP bool
 }
 
 // NewValidator returns a new password validator with default settings
@@ -47,6 +49,7 @@ func NewValidator() *Validator {
 	return NewValidatorWithOpts(Options{
 		MinDist:        -1,
 		DictionaryPath: "/usr/share/dict",
+		CheckHIBP:	true,
 	})
 }
 
@@ -157,6 +160,9 @@ func (v *Validator) Check(password string) error {
 	}
 	if countUniqueChars(password) < v.options.MinDiff {
 		return ErrTooFewChars
+	}
+	if v.options.CheckHIBP && foundInHIBP(password) > -1 {
+		return ErrFoundHIBP
 	}
 
 	// Inspired by cracklib
