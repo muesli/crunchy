@@ -11,6 +11,7 @@ Detects:
  - Passwords from a dictionary / wordlist: `ErrDictionary`
  - Mangled / reversed passwords, like "p@ssw0rd" or "drowssap": `ErrMangledDictionary`
  - Hashed dictionary words, like "5f4dcc3b5aa765d61d8327deb882cf99" (the md5sum of "password"): `ErrHashedDictionary`
+ - Optional hash checks against the haveibeenpwned.com database: `ErrFoundHIBP`
 
 Your system dictionaries from `/usr/share/dict` will be indexed. If no dictionaries were found, crunchy only relies on
 the regular sanity checks (`ErrEmpty`, `ErrTooShort`, `ErrTooFewChars` and `ErrTooSystematic`). On Ubuntu it is

@@ -35,5 +35,4 @@ func foundInHIBP(s string) error {
 	}
 
 	return nil
-
 }

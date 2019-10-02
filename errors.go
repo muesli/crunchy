@@ -47,6 +47,6 @@ var (
 	ErrMangledDictionary = errors.New("Password is mangled, but too common / from a dictionary")
 	// ErrHashedDictionary gets returned when the password is hashed, but found in a dictionary
 	ErrHashedDictionary = errors.New("Password is hashed, but too common / from a dictionary")
-	// ErrFoundInPwned gets returned when the password has been found on https://haveibeenpwned.com
+	// ErrFoundHIBP gets returned when the password has been found on https://haveibeenpwned.com
 	ErrFoundHIBP = errors.New("Password has been found inside haveibeenpwned.com database")
 )
