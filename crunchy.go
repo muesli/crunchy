@@ -161,13 +161,10 @@ func (v *Validator) Check(password string) error {
 	if countUniqueChars(password) < v.options.MinDiff {
 		return ErrTooFewChars
 	}
-	idx, err := foundInHIBP(password)
 	if v.options.CheckHIBP {
-		if idx == -2 {
+		err := foundInHIBP(password)
+		if err != nil {
 			return err
-		}
-		if idx > -1 {
-			return ErrFoundHIBP
 		}
 	}
 

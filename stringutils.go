@@ -74,7 +74,7 @@ func hashsum(s string, hasher hash.Hash) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func foundInHIBP(s string) (int, error) {
+func foundInHIBP(s string) error {
 	h := sha1.New()
 	h.Write([]byte(s))
 	result := hex.EncodeToString(h.Sum(nil))
@@ -86,16 +86,20 @@ func foundInHIBP(s string) (int, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return -2, nil
+		return err
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return -2, nil
+		return err
 	}
 
-	return strings.Index(string(body), restOfHash), nil
+	if strings.Index(string(body), restOfHash) > -1 {
+		return ErrFoundHIBP
+	}
+
+	return nil
 
 }
