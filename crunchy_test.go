@@ -43,6 +43,7 @@ var (
 		{"87654321", ErrTooSystematic, 0},
 		{"abcdefgh", ErrTooSystematic, 0},
 		{"hgfedcba", ErrTooSystematic, 0},
+		{"Qwertyuiop", ErrFoundHIBP, 0},
 
 		{"password", ErrDictionary, 0},
 		{"intoxicate", ErrDictionary, 0},
@@ -70,6 +71,15 @@ func TestValidatePassword(t *testing.T) {
 	})
 
 	for _, pw := range pws {
+		if pw.expected == ErrFoundHIBP {
+			v.options.CheckHIBP = true
+			er := v.Check(pw.pw)
+			if er != pw.expected {
+				t.Errorf("Expected %v for password '%s', got %v", pw.expected, pw.pw, er)
+			}
+			v.options.CheckHIBP = false
+			continue
+		}
 		r, err := v.Rate(pw.pw)
 		if dicterr, ok := err.(*DictionaryError); ok {
 			err = dicterr.Err

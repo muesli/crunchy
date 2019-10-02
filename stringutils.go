@@ -8,15 +8,14 @@
 package crunchy
 
 import (
+	"crypto/sha1"
 	"encoding/hex"
 	"hash"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"unicode"
 	"unicode/utf8"
-	"crypto/sha1"
-	"net/http"
-	"io/ioutil"
-	"log"
 )
 
 // countUniqueChars returns the amount of unique runes in a string
@@ -75,10 +74,9 @@ func hashsum(s string, hasher hash.Hash) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func foundInHIBP(s string) int {
-	bytes := []byte(s)
+func foundInHIBP(s string) (int, error) {
 	h := sha1.New()
-	h.Write(bytes)
+	h.Write([]byte(s))
 	result := hex.EncodeToString(h.Sum(nil))
 
 	firstFive := result[0:5]
@@ -88,16 +86,16 @@ func foundInHIBP(s string) int {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return -2, nil
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return -2, nil
 	}
 
-	return strings.Index(string(body),restOfHash)
+	return strings.Index(string(body), restOfHash), nil
 
 }

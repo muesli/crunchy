@@ -49,7 +49,7 @@ func NewValidator() *Validator {
 	return NewValidatorWithOpts(Options{
 		MinDist:        -1,
 		DictionaryPath: "/usr/share/dict",
-		CheckHIBP:	true,
+		CheckHIBP:      false,
 	})
 }
 
@@ -161,8 +161,14 @@ func (v *Validator) Check(password string) error {
 	if countUniqueChars(password) < v.options.MinDiff {
 		return ErrTooFewChars
 	}
-	if v.options.CheckHIBP && foundInHIBP(password) > -1 {
-		return ErrFoundHIBP
+	idx, err := foundInHIBP(password)
+	if v.options.CheckHIBP {
+		if idx == -2 {
+			return err
+		}
+		if idx > -1 {
+			return ErrFoundHIBP
+		}
 	}
 
 	// Inspired by cracklib
