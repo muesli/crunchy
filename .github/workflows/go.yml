@@ -11,6 +11,12 @@ jobs:
       GO111MODULE: "on"
     steps:
 
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y cracklib-runtime
+      if: matrix.platform == 'ubuntu-latest'
+
     - name: Install Go
       uses: actions/setup-go@v1
       with:
@@ -20,7 +26,9 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Build
-      run: go build -v ./...
+      run: |
+        go get -v
+        go build -v ./...
 
     - name: Test
       run: go test ./...
