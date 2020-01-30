@@ -43,6 +43,8 @@ var (
 		{"87654321", ErrTooSystematic, 0},
 		{"abcdefgh", ErrTooSystematic, 0},
 		{"hgfedcba", ErrTooSystematic, 0},
+
+		// haveibeenpwnd
 		{"Qwertyuiop", ErrFoundHIBP, 0},
 
 		{"password", ErrDictionary, 0},
@@ -63,7 +65,7 @@ var (
 	}
 )
 
-func TestValidatePassword(t *testing.T) {
+func TestRatePassword(t *testing.T) {
 	v := NewValidatorWithOpts(Options{
 		MinDist:        -1,
 		Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
@@ -72,12 +74,6 @@ func TestValidatePassword(t *testing.T) {
 
 	for _, pw := range pws {
 		if pw.expected == ErrFoundHIBP {
-			v.options.CheckHIBP = true
-			er := v.Check(pw.pw)
-			if er != pw.expected {
-				t.Errorf("Expected %v for password '%s', got %v", pw.expected, pw.pw, er)
-			}
-			v.options.CheckHIBP = false
 			continue
 		}
 		r, err := v.Rate(pw.pw)
@@ -92,6 +88,23 @@ func TestValidatePassword(t *testing.T) {
 		}
 		if err != pw.expected {
 			t.Errorf("Expected %v for password '%s', got %v", pw.expected, pw.pw, err)
+		}
+	}
+}
+
+func TestCheckHIBP(t *testing.T) {
+	v := NewValidatorWithOpts(Options{
+		CheckHIBP: true,
+	})
+
+	for _, pw := range pws {
+		if pw.expected != ErrFoundHIBP {
+			continue
+		}
+
+		er := v.Check(pw.pw)
+		if er != pw.expected {
+			t.Errorf("Expected %v for password '%s', got %v", pw.expected, pw.pw, er)
 		}
 	}
 }

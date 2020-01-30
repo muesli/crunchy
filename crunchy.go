@@ -161,12 +161,6 @@ func (v *Validator) Check(password string) error {
 	if countUniqueChars(password) < v.options.MinDiff {
 		return ErrTooFewChars
 	}
-	if v.options.CheckHIBP {
-		err := foundInHIBP(password)
-		if err != nil {
-			return err
-		}
-	}
 
 	// Inspired by cracklib
 	maxrepeat := 3.0 + (0.09 * float64(len(password)))
@@ -174,7 +168,19 @@ func (v *Validator) Check(password string) error {
 		return ErrTooSystematic
 	}
 
-	return v.foundInDictionaries(password)
+	err := v.foundInDictionaries(password)
+	if err != nil {
+		return err
+	}
+
+	if v.options.CheckHIBP {
+		err := foundInHIBP(password)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Rate grades a password's strength from 0 (weak) to 100 (strong).
