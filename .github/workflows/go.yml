@@ -9,6 +9,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     env:
       GO111MODULE: "on"
+      GOPATH: "/home/runner/go"
     steps:
 
     - name: Install Dependencies
