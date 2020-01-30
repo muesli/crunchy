@@ -35,13 +35,8 @@ To install crunchy, simply run:
 
     go get github.com/muesli/crunchy
 
-To compile it from source:
-
-    cd $GOPATH/src/github.com/muesli/crunchy
-    go get -u -v
-    go build && go test -v
-
 ## Example
+
 ```go
 package main
 
@@ -73,6 +68,7 @@ func main() {
 ```
 
 ## Custom Options
+
 ```go
 package main
 
