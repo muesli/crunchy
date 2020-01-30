@@ -10,14 +10,14 @@ crunchy
 Finds common flaws in passwords. Like cracklib, but written in Go.
 
 Detects:
- - Empty passwords: `ErrEmpty`
- - Too short passwords: `ErrTooShort`
- - Too few different characters, like "aabbccdd": `ErrTooFewChars`
- - Systematic passwords, like "abcdefgh" or "87654321": `ErrTooSystematic`
- - Passwords from a dictionary / wordlist: `ErrDictionary`
- - Mangled / reversed passwords, like "p@ssw0rd" or "drowssap": `ErrMangledDictionary`
- - Hashed dictionary words, like "5f4dcc3b5aa765d61d8327deb882cf99" (the md5sum of "password"): `ErrHashedDictionary`
- - Optional hash checks against the haveibeenpwned.com database: `ErrFoundHIBP`
+ - `ErrEmpty`: Empty passwords
+ - `ErrTooShort`: Too short passwords
+ - `ErrTooFewChars`: Too few different characters, like "aabbccdd"
+ - `ErrTooSystematic`: Systematic passwords, like "abcdefgh" or "87654321"
+ - `ErrDictionary`: Passwords from a dictionary / wordlist
+ - `ErrMangledDictionary`: Mangled / reversed passwords, like "p@ssw0rd" or "drowssap"
+ - `ErrHashedDictionary`: Hashed dictionary words, like "5f4dcc3b5aa765d61d8327deb882cf99" (the md5sum of "password")
+ - `ErrFoundHIBP`: Optional hash checks against the haveibeenpwned.com database
 
 Your system dictionaries from `/usr/share/dict` will be indexed. If no dictionaries were found, crunchy only relies on
 the regular sanity checks (`ErrEmpty`, `ErrTooShort`, `ErrTooFewChars` and `ErrTooSystematic`). On Ubuntu it is
