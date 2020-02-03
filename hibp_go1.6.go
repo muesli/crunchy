@@ -1,4 +1,5 @@
 // +build go1.6
+
 package crunchy
 
 import (
