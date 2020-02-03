@@ -4,9 +4,20 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
+	"time"
 )
+
+var HttpClient = &http.Client{
+	Transport: &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 30 * time.Second,
+		}).Dial,
+		ResponseHeaderTimeout: 10 * time.Second,
+	},
+}
 
 func foundInHIBP(s string) error {
 	h := sha1.New()
@@ -18,7 +29,7 @@ func foundInHIBP(s string) error {
 
 	url := "https://api.pwnedpasswords.com/range/" + firstFive
 
-	resp, err := http.Get(url)
+	resp, err := HttpClient.Get(url)
 	if err != nil {
 		return err
 	}
