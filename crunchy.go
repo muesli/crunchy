@@ -8,8 +8,9 @@
 package crunchy
 
 import (
+	"bufio"
 	"hash"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -84,13 +85,15 @@ func (v *Validator) indexDictionaries() {
 	}
 
 	for _, dict := range dicts {
-		buf, err := ioutil.ReadFile(dict)
+		file, err := os.Open(dict)
 		if err != nil {
 			continue
 		}
+		defer file.Close()
 
-		for _, word := range strings.Split(string(buf), "\n") {
-			nw := normalize(word)
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			nw := normalize(scanner.Text())
 			nwlen := len(nw)
 			if nwlen > v.wordsMaxLen {
 				v.wordsMaxLen = nwlen
