@@ -9,6 +9,7 @@ package crunchy
 
 import (
 	"bufio"
+	"encoding/hex"
 	"hash"
 	"os"
 	"path/filepath"
@@ -132,8 +133,10 @@ func (v *Validator) foundInDictionaries(s string) error {
 	}
 
 	// find hashed dictionary entries
-	if word, ok := v.hashedWords[pw]; ok {
-		return &HashedDictionaryError{ErrHashedDictionary, word}
+	if pwindex, err := hex.DecodeString(pw); err == nil {
+		if word, ok := v.hashedWords[string(pwindex)]; ok {
+			return &HashedDictionaryError{ErrHashedDictionary, word}
+		}
 	}
 
 	// find mangled / reversed passwords
