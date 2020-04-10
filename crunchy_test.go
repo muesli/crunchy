@@ -124,6 +124,6 @@ func BenchmarkValidatePassword(b *testing.B) {
 	s := hashsum(strconv.Itoa(b.N), md5.New())
 
 	for n := 0; n < b.N; n++ {
-		v.Check(s)
+		_ = v.Check(s)
 	}
 }
