@@ -65,6 +65,16 @@ var (
 	}
 )
 
+func TestValidator(t *testing.T) {
+	v := NewValidator()
+
+	pw := "crunchy"
+	err := v.Check(pw)
+	if err == nil {
+		t.Errorf("Expected %v for password '%s', got nil", ErrTooShort, pw)
+	}
+}
+
 func TestRatePassword(t *testing.T) {
 	v := NewValidatorWithOpts(Options{
 		MinDist:        -1,
