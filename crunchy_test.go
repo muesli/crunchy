@@ -154,3 +154,14 @@ func BenchmarkValidatePassword(b *testing.B) {
 		_ = v.Check(pass.valid)
 	}
 }
+
+func BenchmarkFoundInDictionaries(b *testing.B) {
+	v := NewValidator()
+	v.once.Do(v.indexDictionaries)
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		_ = v.foundInDictionaries(pass.valid)
+	}
+
+}
