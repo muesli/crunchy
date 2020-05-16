@@ -13,16 +13,25 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"hash"
-	"strconv"
 	"testing"
 )
 
 var (
+	// example of valid and invalid passwords
+	pass = struct {
+		valid   string
+		invalid string
+	}{"d1924ce3d0510b2b2b4604c99453e2e1", ""}
+
 	pws = []struct {
 		pw       string
 		expected error
 		rating   uint
 	}{
+		// include values from pass in tests
+		{pass.valid, nil, 100},
+		{pass.invalid, ErrEmpty, 0},
+
 		// valid passwords
 		{"d1924ce3d0510b2b2b4604c99453e2e1", nil, 100},
 		{"aCgIknPv", nil, 40},
@@ -120,10 +129,13 @@ func TestCheckHIBP(t *testing.T) {
 }
 
 func BenchmarkValidatePassword(b *testing.B) {
-	v := NewValidator()
-	s := hashsum(strconv.Itoa(b.N), md5.New())
+	v := NewValidatorWithOpts(Options{
+		MinDist:        -1,
+		Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
+		DictionaryPath: "/usr/share/dict",
+	})
 
 	for n := 0; n < b.N; n++ {
-		_ = v.Check(s)
+		_ = v.Check(pass.valid)
 	}
 }
