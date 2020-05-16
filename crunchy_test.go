@@ -128,12 +128,27 @@ func TestCheckHIBP(t *testing.T) {
 	}
 }
 
+func BenchmarkIndexDictionaries(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		v := NewValidatorWithOpts(Options{
+			MinDist:        -1,
+			Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
+			DictionaryPath: "/usr/share/dict",
+		})
+
+		v.indexDictionaries()
+	}
+
+}
+
 func BenchmarkValidatePassword(b *testing.B) {
 	v := NewValidatorWithOpts(Options{
 		MinDist:        -1,
 		Hashers:        []hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()},
 		DictionaryPath: "/usr/share/dict",
 	})
+	v.once.Do(v.indexDictionaries)
+	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
 		_ = v.Check(pass.valid)
