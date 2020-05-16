@@ -13,6 +13,7 @@ import (
 	"hash"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"unicode"
@@ -142,12 +143,25 @@ func (v *Validator) foundInDictionaries(s string) error {
 	// find mangled / reversed passwords
 	// we can skip this if the pw is longer than the longest word plus our minimum distance
 	if pwlen <= v.wordsMaxLen+v.options.MinDist {
+		jobs := runtime.GOMAXPROCS(0)
+		queue := make(chan struct{}, jobs)
+		errc := make(chan *DictionaryError, jobs)
 		for word := range v.words {
-			if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= v.options.MinDist {
-				return &DictionaryError{ErrMangledDictionary, word, dist}
-			}
-			if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= v.options.MinDist {
-				return &DictionaryError{ErrMangledDictionary, word, dist}
+			select {
+			case queue <- struct{}{}:
+				go func(word string) {
+					defer func() { <-queue }()
+					if dist := smetrics.WagnerFischer(word, pw, 1, 1, 1); dist <= v.options.MinDist {
+						errc <- &DictionaryError{ErrMangledDictionary, word, dist}
+						return
+					}
+					if dist := smetrics.WagnerFischer(word, revpw, 1, 1, 1); dist <= v.options.MinDist {
+						errc <- &DictionaryError{ErrMangledDictionary, word, dist}
+						return
+					}
+				}(word)
+			case err := <-errc:
+				return err
 			}
 		}
 	}
