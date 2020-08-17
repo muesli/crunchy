@@ -13,6 +13,7 @@ import (
 	"hash"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"unicode"
@@ -44,14 +45,20 @@ type Options struct {
 	DictionaryPath string
 	// Check haveibeenpwned.com database
 	CheckHIBP bool
+	// MustContainDigit requires at least one digit for a valid password
+	MustContainDigit bool
+	// MustContainSymbol requires at least one special symbol for a valid password
+	MustContainSymbol bool
 }
 
 // NewValidator returns a new password validator with default settings
 func NewValidator() *Validator {
 	return NewValidatorWithOpts(Options{
-		MinDist:        -1,
-		DictionaryPath: "/usr/share/dict",
-		CheckHIBP:      false,
+		MinDist:           -1,
+		DictionaryPath:    "/usr/share/dict",
+		CheckHIBP:         false,
+		MustContainDigit:  false,
+		MustContainSymbol: false,
 	})
 }
 
@@ -183,6 +190,20 @@ func (v *Validator) Check(password string) error {
 		err := foundInHIBP(password)
 		if err != nil {
 			return err
+		}
+	}
+
+	if v.options.MustContainDigit {
+		validateDigit := regexp.MustCompile(`[0-9]+`)
+		if !validateDigit.MatchString(password) {
+			return ErrNoDigits
+		}
+	}
+
+	if v.options.MustContainSymbol {
+		validateSymbols := regexp.MustCompile(`[^\w\s]+`)
+		if !validateSymbols.MatchString(password) {
+			return ErrNoSymbols
 		}
 	}
 
