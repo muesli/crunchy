@@ -175,6 +175,20 @@ func (v *Validator) Check(password string) error {
 		return ErrTooFewChars
 	}
 
+	if v.options.MustContainDigit {
+		validateDigit := regexp.MustCompile(`[0-9]+`)
+		if !validateDigit.MatchString(password) {
+			return ErrNoDigits
+		}
+	}
+
+	if v.options.MustContainSymbol {
+		validateSymbols := regexp.MustCompile(`[^\w\s]+`)
+		if !validateSymbols.MatchString(password) {
+			return ErrNoSymbols
+		}
+	}
+
 	// Inspired by cracklib
 	maxrepeat := 3.0 + (0.09 * float64(len(password)))
 	if countSystematicChars(password) > int(maxrepeat) {
@@ -190,20 +204,6 @@ func (v *Validator) Check(password string) error {
 		err := foundInHIBP(password)
 		if err != nil {
 			return err
-		}
-	}
-
-	if v.options.MustContainDigit {
-		validateDigit := regexp.MustCompile(`[0-9]+`)
-		if !validateDigit.MatchString(password) {
-			return ErrNoDigits
-		}
-	}
-
-	if v.options.MustContainSymbol {
-		validateSymbols := regexp.MustCompile(`[^\w\s]+`)
-		if !validateSymbols.MatchString(password) {
-			return ErrNoSymbols
 		}
 	}
 

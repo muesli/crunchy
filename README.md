@@ -1,5 +1,6 @@
-# crunchy
+crunchy
 =======
+
 [![Latest Release](https://img.shields.io/github/release/muesli/crunchy.svg)](https://github.com/muesli/crunchy/releases)
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://godoc.org/github.com/muesli/crunchy)
 [![Build Status](https://travis-ci.org/muesli/crunchy.svg?branch=master)](https://travis-ci.org/muesli/crunchy)
@@ -9,16 +10,16 @@
 Finds common flaws in passwords. Like cracklib, but written in Go.
 
 Detects:
-- `ErrEmpty`: Empty passwords
-- `ErrTooShort`: Too short passwords
-- `ErrTooFewChars`: Too few different characters, like "aabbccdd"
-- `ErrNoDigits`: Password does not contain any digits
-- `ErrNoDigits`: Password does not contain any digits
-- `ErrTooSystematic`: Systematic passwords, like "abcdefgh" or "87654321"
-- `ErrDictionary`: Passwords from a dictionary / wordlist
-- `ErrMangledDictionary`: Mangled / reversed passwords, like "p@ssw0rd" or "drowssap"
-- `ErrHashedDictionary`: Hashed dictionary words, like "5f4dcc3b5aa765d61d8327deb882cf99" (the md5sum of "password")
-- `ErrFoundHIBP`: Optional hash checks against the haveibeenpwned.com database
+ - `ErrEmpty`: Empty passwords
+ - `ErrTooShort`: Too short passwords
+ - `ErrNoDigits`: Password does not contain any digits
+ - `ErrNoSymbols`: Password does not contain any special characters
+ - `ErrTooFewChars`: Too few different characters, like "aabbccdd"
+ - `ErrTooSystematic`: Systematic passwords, like "abcdefgh" or "87654321"
+ - `ErrDictionary`: Passwords from a dictionary / wordlist
+ - `ErrMangledDictionary`: Mangled / reversed passwords, like "p@ssw0rd" or "drowssap"
+ - `ErrHashedDictionary`: Hashed dictionary words, like "5f4dcc3b5aa765d61d8327deb882cf99" (the md5sum of "password")
+ - `ErrFoundHIBP`: Optional hash checks against the haveibeenpwned.com database
 
 Your system dictionaries from `/usr/share/dict` will be indexed. If no dictionaries were found, crunchy only relies on
 the regular sanity checks (`ErrEmpty`, `ErrTooShort`, `ErrTooFewChars` and `ErrTooSystematic`). On Ubuntu it is
@@ -105,7 +106,7 @@ func main() {
 
         // MustContainSymbol is a flag to require at least one special symbol for a valid password
         // (default is false)
-        MustContainDigit: true,
+        MustContainSymbol: true,
 
 	// Check haveibeenpwned.com database
 	// Default is false
