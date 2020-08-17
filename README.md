@@ -1,5 +1,5 @@
 # crunchy
-
+=======
 [![Latest Release](https://img.shields.io/github/release/muesli/crunchy.svg)](https://github.com/muesli/crunchy/releases)
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://godoc.org/github.com/muesli/crunchy)
 [![Build Status](https://travis-ci.org/muesli/crunchy.svg?branch=master)](https://travis-ci.org/muesli/crunchy)
@@ -9,7 +9,6 @@
 Finds common flaws in passwords. Like cracklib, but written in Go.
 
 Detects:
-
 - `ErrEmpty`: Empty passwords
 - `ErrTooShort`: Too short passwords
 - `ErrTooFewChars`: Too few different characters, like "aabbccdd"
