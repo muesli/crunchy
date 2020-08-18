@@ -39,6 +39,10 @@ var (
 	ErrTooShort = errors.New("Password is too short")
 	// ErrTooFewChars gets returned when the password does not contain enough unique characters
 	ErrTooFewChars = errors.New("Password does not contain enough different/unique characters")
+	// ErrNoDigits gets returned when the password does not contain any digits
+	ErrNoDigits = errors.New("Password does not contain any digits")
+	// ErrNoSymbols gets returned when the password does not contain any symbols
+	ErrNoSymbols = errors.New("Password does not contain any special symbols")
 	// ErrTooSystematic gets returned when the password is too systematic (e.g. 123456, abcdef)
 	ErrTooSystematic = errors.New("Password is too systematic")
 	// ErrDictionary gets returned when the password is found in a dictionary

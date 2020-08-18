@@ -12,6 +12,8 @@ Finds common flaws in passwords. Like cracklib, but written in Go.
 Detects:
  - `ErrEmpty`: Empty passwords
  - `ErrTooShort`: Too short passwords
+ - `ErrNoDigits`: Password does not contain any digits
+ - `ErrNoSymbols`: Password does not contain any special characters
  - `ErrTooFewChars`: Too few different characters, like "aabbccdd"
  - `ErrTooSystematic`: Systematic passwords, like "abcdefgh" or "87654321"
  - `ErrDictionary`: Passwords from a dictionary / wordlist
@@ -97,6 +99,14 @@ func main() {
         // DictionaryPath contains all the dictionaries that will be parsed
         // (default is /usr/share/dict)
         DictionaryPath: "/var/my/own/dicts",
+
+        // MustContainDigit is a flag to require at least one digit for a valid password
+        // (default is false)
+        MustContainDigit: true,
+
+        // MustContainSymbol is a flag to require at least one special symbol for a valid password
+        // (default is false)
+        MustContainSymbol: true,
 
 	// Check haveibeenpwned.com database
 	// Default is false
