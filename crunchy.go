@@ -97,7 +97,6 @@ func (v *Validator) indexDictionaries() {
 		if err != nil {
 			continue
 		}
-		defer file.Close()
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
@@ -117,6 +116,8 @@ func (v *Validator) indexDictionaries() {
 				v.hashedWords[hashsum(nw, hasher)] = nw
 			}
 		}
+
+		file.Close()
 	}
 }
 
