@@ -5,7 +5,7 @@ crunchy
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://godoc.org/github.com/muesli/crunchy)
 [![Build Status](https://travis-ci.org/muesli/crunchy.svg?branch=master)](https://travis-ci.org/muesli/crunchy)
 [![Coverage Status](https://coveralls.io/repos/github/muesli/crunchy/badge.svg?branch=master)](https://coveralls.io/github/muesli/crunchy?branch=master)
-[![Go ReportCard](http://goreportcard.com/badge/muesli/crunchy)](http://goreportcard.com/report/muesli/crunchy)
+[![Go ReportCard](https://goreportcard.com/badge/muesli/crunchy)](https://goreportcard.com/report/muesli/crunchy)
 
 Finds common flaws in passwords. Like cracklib, but written in Go.
 
@@ -31,7 +31,7 @@ crunchy uses the WagnerFischer algorithm to find mangled passwords in your dicti
 ## Installation
 
 Make sure you have a working Go environment (Go 1.2 or higher is required).
-See the [install instructions](http://golang.org/doc/install.html).
+See the [install instructions](https://golang.org/doc/install.html).
 
 To install crunchy, simply run:
 
