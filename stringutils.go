@@ -66,6 +66,6 @@ func normalize(s string) string {
 // hashsum returns the hashed sum of a string
 func hashsum(s string, hasher hash.Hash) string {
 	hasher.Reset()
-	_, _ = hasher.Write([]byte(s))
+	hasher.Write([]byte(s))
 	return string(hasher.Sum(nil))
 }
