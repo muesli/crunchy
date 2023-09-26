@@ -121,9 +121,14 @@ func (v *Validator) indexDictionaries() {
 	}
 }
 
+// IndexDictionaries parses dictionaries/wordlists once
+func (v *Validator) IndexDictionaries() {
+	v.once.Do(v.indexDictionaries)
+}
+
 // foundInDictionaries returns whether a (mangled) string exists in the indexed dictionaries
 func (v *Validator) foundInDictionaries(s string) error {
-	v.once.Do(v.indexDictionaries)
+	v.IndexDictionaries()
 
 	pw := normalize(s)   // normalized password
 	revpw := reverse(pw) // reversed password
