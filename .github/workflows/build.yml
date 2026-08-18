@@ -1,0 +1,33 @@
+name: build
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go-version: [~1.18, ^1]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cracklib-runtime
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Install Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -race ./...
