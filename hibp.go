@@ -3,7 +3,7 @@ package crunchy
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -12,9 +12,9 @@ import (
 
 var HttpClient = &http.Client{
 	Transport: &http.Transport{
-		Dial: (&net.Dialer{
+		DialContext: (&net.Dialer{
 			Timeout: 30 * time.Second,
-		}).Dial,
+		}).DialContext,
 		ResponseHeaderTimeout: 10 * time.Second,
 	},
 }
@@ -36,7 +36,7 @@ func foundInHIBP(s string) error {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
